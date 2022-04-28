@@ -1,0 +1,44 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      ruby_version:
+        type: string
+        required: true
+      node_version:
+        type: string
+        required: true
+      cmd:
+        type: string
+        required: true
+      cache_key:
+        type: string
+        required: false
+        default: yarn
+    secrets:
+      bundle_github__com:
+        required: false
+env:
+  BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    uses: ePages-de/action-build-rails/action.yml
+      with:
+        node_version: ${{ inputs.node_version }}
+        ruby_version: ${{ inputs.ruby_version }}
+  node_run:
+    runs-on: ubuntu-latest
+    uses: ePages-de/action-node-run/action.yml
+      with:
+        node_version: ${{ inputs.node_version }}
+        cmd: ${{ inputs.cmd }}
+        cache_key: ${{ inputs.cache_key }}
+  bundle_run:
+    runs-on: ubuntu-latest
+    uses: ePages-de/action-bundle-run/action.yml
+      with:
+        node_version: ${{ inputs.node_version }}
+        ruby_version: ${{ inputs.ruby_version }}
