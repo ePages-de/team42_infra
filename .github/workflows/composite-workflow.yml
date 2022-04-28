@@ -25,20 +25,20 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    uses: ePages-de/action-build-rails/action.yml
+    uses: ePages-de/action-build-rails@master
       with:
         node_version: ${{ inputs.node_version }}
         ruby_version: ${{ inputs.ruby_version }}
   node_run:
     runs-on: ubuntu-latest
-    uses: ePages-de/action-node-run/action.yml
+    uses: ePages-de/action-node-run@create_node_run_action
       with:
         node_version: ${{ inputs.node_version }}
         cmd: ${{ inputs.cmd }}
         cache_key: ${{ inputs.cache_key }}
   bundle_run:
     runs-on: ubuntu-latest
-    uses: ePages-de/action-bundle-run/action.yml
+    uses: ePages-de/action-bundle-run@Use_composite
       with:
         node_version: ${{ inputs.node_version }}
         ruby_version: ${{ inputs.ruby_version }}
