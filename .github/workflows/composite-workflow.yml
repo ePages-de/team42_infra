@@ -51,6 +51,7 @@ jobs:
       - uses: ePages-de/action-ruby-run@v1
         with:
           ruby_version: ${{ inputs.ruby_version }}
+          bundle_github__com: ${{ secrets.bundle_github__com }}
           cmd: bundle exec rubocop --config .rubocop.yml
 
   rspec:
