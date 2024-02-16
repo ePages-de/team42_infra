@@ -68,7 +68,7 @@ jobs:
           ruby-version: ${{ inputs.ruby_version }}
           bundler-cache: true
       - run: sudo apt-get -y install libpq-dev
-      - run: bundle exec rails db:create db:schema:load --trace
+      - run: bundle exec rails db:setup db:schema:load --trace
       - run: bundle exec rspec
       - uses: actions/upload-artifact@master
         if: always()
