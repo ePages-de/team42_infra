@@ -99,7 +99,7 @@ jobs:
           DOTENV_CONTENT: ${{ secrets.dotenv_content }}
         run: echo $DOTENV_CONTENT | base64 -d > .env.test
       - run: sudo apt-get -y install libpq-dev
-      - run: bundle exec rails db:create db:schema:load --trace
+      - run: bundle exec rails db:setup db:schema:load --trace
       - run: bundle exec rspec
       - uses: actions/upload-artifact@master
         if: always()
