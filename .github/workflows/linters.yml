@@ -9,10 +9,6 @@ on:
       node-version:
         required: false
         type: string
-      linters:
-        required: false
-        type: string
-        default: rubocop
     secrets:
       bundle_github__com:
         required: false
@@ -20,7 +16,6 @@ on:
 jobs:
   rubocop:
     runs-on: ubuntu-latest
-    if: contains(inputs.linters, 'rubocop')
     steps:
       - uses: actions/checkout@v4
       - name: Setup Ruby
@@ -35,7 +30,7 @@ jobs:
 
   eslint:
     runs-on: ubuntu-latest
-    if: contains(inputs.linters, 'eslint')
+    if: ${{ inputs.node-version }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node
@@ -47,18 +42,3 @@ jobs:
         run: yarn install --production=false
       - name: ES Lint
         run: npx eslint app
-
-  sass-lint:
-    runs-on: ubuntu-latest
-    if: contains(inputs.linters, 'sass-lint')
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node-version }}
-          cache: yarn
-      - name: Yarn install
-        run: yarn install --production=false
-      - name: SASS Lint
-        run: npx sass-lint -v -q

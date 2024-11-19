@@ -9,14 +9,8 @@ on:
       node-version:
         type: string
         required: false
-      skip-node:
-        type: boolean
-        required: false
-        default: false
     secrets:
       bundle_github__com:
-        required: false
-      dotenv_content:
         required: false
       rails_master_key:
         required: false
@@ -57,18 +51,14 @@ jobs:
           ruby-version: ${{ inputs.ruby-version }}
           bundler-cache: true
       - name: Setup Node
-        if: ${{ !inputs.skip-node }}
+        if: ${{ inputs.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
           cache: yarn
       - name: Yarn install
-        if: ${{ !inputs.skip-node }}
+        if: ${{ inputs.node-version }}  
         run: yarn install --production=false
-      - name: Setup dotenv
-        env:
-          DOTENV_CONTENT: ${{ secrets.dotenv_content }}
-        run: echo $DOTENV_CONTENT | base64 -d > .env.test
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -79,8 +69,3 @@ jobs:
           bundle exec rails db:setup
           bundle exec rails db:test:prepare
       - run: bundle exec rspec
-      - uses: actions/upload-artifact@master
-        if: always()
-        with:
-          name: coverage
-          path: coverage
