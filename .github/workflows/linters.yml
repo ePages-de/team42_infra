@@ -1,0 +1,74 @@
+name: Linting Workflow
+
+on:
+  workflow_call:
+    inputs:
+      ruby-version:
+        required: true
+        type: string
+      node-version:
+        required: true
+        type: string
+    secrets:
+      bundle_github__com:
+        required: false
+
+jobs:
+  setup-ruby:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        id: ruby-version
+        with:
+          ruby-version: ${{ inputs.ruby-version }}
+          bundler-cache: true
+        env:
+          BUNDLE_GITHUB__COM: ${{ secrets.T42_BUNDLE_GITHUB__COM }}
+
+  setup-node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        id: node-version
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: yarn
+
+  rubocop:
+    needs: setup-ruby
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ inputs.ruby-version }}
+          bundler-cache: true
+        env:
+          BUNDLE_GITHUB__COM: ${{ secrets.T42_BUNDLE_GITHUB__COM }}
+      - name: Rubocop
+        run: bundle exec rubocop --config .rubocop.yml
+
+  eslint:
+    needs: setup-node
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Yarn install
+        run: yarn install --production=false
+      - name: ES Lint
+        run: npx eslint app
+
+  sass-lint:
+    needs: setup-node
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Yarn install
+        run: yarn install --production=false
+      - name: SASS Lint
+        run: npx sass-lint -v -q
