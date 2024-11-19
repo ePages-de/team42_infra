@@ -12,7 +12,7 @@ on:
       linters:
         required: false
         type: string
-        default: rubocop,eslint,sass-lint
+        default: rubocop
     secrets:
       bundle_github__com:
         required: false
