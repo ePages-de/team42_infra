@@ -1,0 +1,80 @@
+name: Tests
+
+on:
+  workflow_call:
+    inputs:
+      ruby-version:
+        type: string
+        required: true
+      node-version:
+        type: string
+        required: true
+    secrets:
+      bundle_github__com:
+        required: false
+      dotenv_content:
+        required: false
+      rails_master_key:
+        required: false
+
+jobs:
+  rspec:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/test
+      RAILS_ENV: test
+      REDIS_URL: redis://localhost:6379/0
+      RAILS_MASTER_KEY: ${{ secrets.rails_master_key }}
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: --entrypoint redis-server
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        env:
+          BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
+        with:
+          ruby-version: ${{ inputs.ruby-version }}
+          bundler-cache: true
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: yarn
+      - name: Yarn install
+        run: yarn install --production=false # check this when no yarn in project
+      - name: Setup dotenv
+        env:
+          DOTENV_CONTENT: ${{ secrets.dotenv_content }}
+        run: echo $DOTENV_CONTENT | base64 -d > .env.test
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install libpq-dev
+          sudo apt-get -y install libvips
+      - name: Setup database
+        run: |
+          bundle exec rails db:setup
+          bundle exec rails db:test:prepare
+      - run: bundle exec rspec
+      - uses: actions/upload-artifact@master
+        if: always()
+        with:
+          name: coverage
+          path: coverage
