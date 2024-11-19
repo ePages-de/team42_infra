@@ -8,7 +8,11 @@ on:
         required: true
       node-version:
         type: string
-        required: true
+        required: false
+      skip-node:
+        type: boolean
+        required: false
+        default: false
     secrets:
       bundle_github__com:
         required: false
@@ -53,12 +57,14 @@ jobs:
           ruby-version: ${{ inputs.ruby-version }}
           bundler-cache: true
       - name: Setup Node
+        if: ${{ !inputs.skip-node }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
           cache: yarn
       - name: Yarn install
-        run: yarn install --production=false # check this when no yarn in project
+        if: ${{ !inputs.skip-node }}
+        run: yarn install --production=false
       - name: Setup dotenv
         env:
           DOTENV_CONTENT: ${{ secrets.dotenv_content }}
