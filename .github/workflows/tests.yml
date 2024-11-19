@@ -66,5 +66,5 @@ jobs:
           sudo apt-get -y install libvips
       - name: Setup database
         run: |
-          bundle exec rails db:test:prepare
+          bin/rails db:test:prepare
       - run: bundle exec rspec
