@@ -24,7 +24,7 @@ jobs:
           ruby-version: ${{ inputs.ruby-version }}
           bundler-cache: true
         env:
-          BUNDLE_GITHUB__COM: ${{ secrets.T42_BUNDLE_GITHUB__COM }}
+          BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
       - name: Rubocop
         run: bundle exec rubocop --config .rubocop.yml
 
