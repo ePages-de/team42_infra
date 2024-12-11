@@ -9,6 +9,9 @@ on:
       node-version:
         type: string
         required: false
+      node-version-file:
+        type: string
+        required: false
     secrets:
       bundle_github__com:
         required: false
@@ -51,13 +54,14 @@ jobs:
           ruby-version: ${{ inputs.ruby-version }}
           bundler-cache: true
       - name: Setup Node
-        if: ${{ inputs.node-version }}
+        if: ${{ inputs.node-version || inputs.node-version-file }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
+          node-version-file: ${{ inputs.node-version-file }}
           cache: yarn
       - name: Yarn install
-        if: ${{ inputs.node-version }}  
+        if: ${{ inputs.node-version || inputs.node-version-file }}
         run: yarn install --production=false
       - name: Install dependencies
         run: |

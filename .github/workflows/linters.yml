@@ -4,11 +4,14 @@ on:
   workflow_call:
     inputs:
       ruby-version:
+        type: string
         required: true
-        type: string
       node-version:
-        required: false
         type: string
+        required: false
+      node-version-file:
+        type: string
+        required: false
     secrets:
       bundle_github__com:
         required: false
@@ -30,13 +33,14 @@ jobs:
 
   eslint:
     runs-on: ubuntu-latest
-    if: ${{ inputs.node-version }}
+    if: ${{ inputs.node-version || inputs.node-version-file }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
+          node-version-file: ${{ inputs.node-version-file }}
           cache: yarn
       - name: Yarn install
         run: yarn install --production=false
