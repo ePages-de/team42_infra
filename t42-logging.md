@@ -62,9 +62,16 @@ gcloud logging buckets update "${BUCKET_NAME}"   --location="${LOCATION}"   --pr
 gcloud logging sinks create "${SINK_NAME}" "${DEST}"   --project="${PROJECT_ID}"   --description="Route all logs to custom bucket with 14‑day retention"
 ```
 
-## 9. Verify
+## 9. Add Logs Viewer Permissions to Team42 group
+```bash
+gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
+  --member="group:team42@epages.com" \
+  --role="roles/logging.viewer"
+```
+
+## 10. Verify
 ```bash
 gcloud services list --project="${PROJECT_ID}"   --filter="NAME:logging.googleapis.com"
 
-gcloud projects get-iam-policy "${PROJECT_ID}"   --flatten="bindings[].members"   --filter="bindings.role:roles/logging.logWriter AND bindings.members:serviceAccount:${SA_EMAIL}"   --format="table(bindings.role, bindings.members)"
+gcloud projects get-iam-policy "${PROJECT_ID}"   --flatten="bindings[].members"   --format="table(bindings.role, bindings.members)"
 ```
