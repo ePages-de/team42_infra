@@ -17,6 +17,10 @@ on:
         required: false
       rails_master_key:
         required: false
+      app_client_id:
+        required: false
+      app_private_key:
+        required: false
 
 jobs:
   rspec:
@@ -46,10 +50,29 @@ jobs:
         options: --entrypoint redis-server
     steps:
       - uses: actions/checkout@v4
+
+      # NOTE: The `secrets` context is not available in step-level `if`, so we
+      #       probe for the app credentials in a `run` step first.
+      - name: Check for GitHub App credentials
+        id: app-creds
+        shell: bash
+        env:
+          CLIENT_ID: ${{ secrets.app_client_id }}
+        run: echo "present=$([ -n "$CLIENT_ID" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Generate scoped installation token
+        id: app-token
+        if: steps.app-creds.outputs.present == 'true'
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.app_client_id }}
+          private-key: ${{ secrets.app_private_key }}
+          owner: ${{ github.repository_owner }}
+
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         env:
-          BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
+          BUNDLE_GITHUB__COM: ${{ steps.app-token.outputs.token || secrets.bundle_github__com }}
         with:
           ruby-version: ${{ inputs.ruby-version }}
           bundler-cache: true
