@@ -28,6 +28,18 @@ jobs:
           bundler-cache: true
         env:
           BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
+      - name: Check Bundler GitHub secret presence
+        shell: bash
+        run: |
+          if [ -z "${BUNDLE_GITHUB__COM:-}" ]; then
+            echo "BUNDLE_GITHUB__COM is missing"
+            exit 1
+          fi
+
+          echo "BUNDLE_GITHUB__COM is set"
+          echo "Length: ${#BUNDLE_GITHUB__COM}"
+        env:
+          BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
       - name: Rubocop
         run: bundle exec rubocop --config .rubocop.yml
 
