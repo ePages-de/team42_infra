@@ -19,12 +19,15 @@ on:
 jobs:
   rubocop:
     runs-on: ubuntu-latest
+    env:
+      BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
     steps:
       - uses: actions/checkout@v4
-      - name: Log Bundler GitHub secret length
+      - name: Debug secrets received
         shell: bash
         run: |
-          echo "BUNDLE_GITHUB__COM length: ${#BUNDLE_GITHUB__COM}"
+          echo "bundle_github__com provided: $([[ -n '${{ secrets.bundle_github__com }}' ]] && echo 'YES' || echo 'NO')"
+          echo "bundle_github__com length: ${#BUNDLE_GITHUB__COM}"
         env:
           BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
       - name: Setup Ruby
