@@ -21,13 +21,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ inputs.ruby-version }}
-          bundler-cache: true
-        env:
-          BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
       - name: Check Bundler GitHub secret presence
         shell: bash
         run: |
@@ -38,6 +31,13 @@ jobs:
 
           echo "BUNDLE_GITHUB__COM is set"
           echo "Length: ${#BUNDLE_GITHUB__COM}"
+        env:
+          BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ inputs.ruby-version }}
+          bundler-cache: true
         env:
           BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
       - name: Rubocop
