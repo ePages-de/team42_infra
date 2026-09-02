@@ -21,17 +21,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Log Bundler GitHub secret length
+        shell: bash
+        run: |
+          echo "BUNDLE_GITHUB__COM length: ${#BUNDLE_GITHUB__COM}"
+        env:
+          BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ inputs.ruby-version }}
           bundler-cache: true
-        env:
-          BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
-      - name: Log Bundler GitHub secret length
-        shell: bash
-        run: |
-          echo "BUNDLE_GITHUB__COM length: ${#BUNDLE_GITHUB__COM}"
         env:
           BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
       - name: Rubocop
