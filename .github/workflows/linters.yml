@@ -23,8 +23,6 @@ on:
 jobs:
   rubocop:
     runs-on: ubuntu-latest
-    env:
-      APP_CLIENT_ID: ${{ secrets.app_client_id }}
     steps:
       - uses: actions/checkout@v4
       - name: Generate scoped installation token
