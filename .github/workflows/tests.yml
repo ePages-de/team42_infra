@@ -17,10 +17,6 @@ on:
         required: false
       rails_master_key:
         required: false
-      app_client_id:
-        required: false
-      app_private_key:
-        required: false
 
 jobs:
   rspec:
@@ -50,64 +46,13 @@ jobs:
         options: --entrypoint redis-server
     steps:
       - uses: actions/checkout@v4
-
-      # NOTE: The `secrets` context is not available in step-level `if`, so we
-      #       probe for the app credentials in a `run` step first.
-      - name: Check for GitHub App credentials
-        id: app-creds
-        shell: bash
-        env:
-          CLIENT_ID: ${{ secrets.app_client_id }}
-        run: echo "present=$([ -n "$CLIENT_ID" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-
-      - name: Generate scoped installation token
-        id: app-token
-        if: steps.app-creds.outputs.present == 'true'
-        uses: actions/create-github-app-token@v3
-        with:
-          client-id: ${{ secrets.app_client_id }}
-          private-key: ${{ secrets.app_private_key }}
-          owner: ${{ github.repository_owner }}
-
-      - name: Configure Git authentication
-        if: steps.app-creds.outputs.present == 'true'
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
-          echo "✓ Git configured to use GitHub App token for authentication"
-          echo "Token scope: ePages-de organization"
-
-      - name: Verify token access to canvas
-        if: steps.app-creds.outputs.present == 'true'
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          echo "Attempting to access canvas repository metadata..."
-          curl -s -H "Authorization: token ${GH_TOKEN}" \
-            https://api.github.com/repos/ePages-de/canvas | grep -q '"id"' && \
-            echo "✓ Token has access to canvas" || \
-            echo "✗ Token does NOT have access to canvas"
-
-      - name: Verify token access to beyond_toolbox
-        if: steps.app-creds.outputs.present == 'true'
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          echo "Attempting to access beyond_toolbox repository metadata..."
-          curl -s -H "Authorization: token ${GH_TOKEN}" \
-            https://api.github.com/repos/ePages-de/beyond_toolbox | grep -q '"id"' && \
-            echo "✓ Token has access to beyond_toolbox" || \
-            echo "✗ Token does NOT have access to beyond_toolbox"
-
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         env:
-          BUNDLE_GITHUB__COM: ${{ steps.app-token.outputs.token || secrets.bundle_github__com }}
+          BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
         with:
           ruby-version: ${{ inputs.ruby-version }}
           bundler-cache: true
-
       - name: Setup Node
         if: ${{ inputs.node-version || inputs.node-version-file }}
         uses: actions/setup-node@v4
@@ -115,19 +60,15 @@ jobs:
           node-version: ${{ inputs.node-version }}
           node-version-file: ${{ inputs.node-version-file }}
           cache: yarn
-
       - name: Yarn install
         if: ${{ inputs.node-version || inputs.node-version-file }}
         run: yarn install --production=false
-
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get -y install libpq-dev
           sudo apt-get -y install libvips
-
       - name: Setup database
         run: |
           bin/rails db:test:prepare
-
       - run: bundle exec rspec
