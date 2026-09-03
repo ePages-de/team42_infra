@@ -13,6 +13,10 @@ on:
         type: string
         required: false
     secrets:
+      app_client_id:
+        required: false
+      app_private_key:
+        required: false
       bundle_github__com:
         required: false
 
@@ -21,13 +25,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Generate scoped installation token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.app_client_id }}
+          private-key: ${{ secrets.app_private_key }}
+          owner: ${{ github.repository_owner }}
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ inputs.ruby-version }}
           bundler-cache: true
         env:
-          BUNDLE_GITHUB__COM: ${{ secrets.bundle_github__com }}
+          BUNDLE_GITHUB__COM: ${{ format('x-access-token:{0}', steps.app-token.outputs.token) }}
       - name: Rubocop
         run: bundle exec rubocop --config .rubocop.yml
 
